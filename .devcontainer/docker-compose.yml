@@ -1,0 +1,25 @@
+services:
+  pdf_qa_app:
+    container_name: "pdf_qa_app_devcontainer"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /workspaces/pdf_qa_app
+    entrypoint: /bin/sh -c 'tail --follow /dev/null'
+    volumes:
+      # NOTE setup the main folder as a development environment volume
+      - ..:/workspaces/pdf_qa_app
+      # NOTE This allows the host docker socket to be accessible from within the devcontainer
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  chromadb:
+    container_name: "chromadb_devcontainer"
+    image: chromadb/chroma:1.0.8
+    ports:
+      - 8000:8000
+    volumes:
+      - chromadb_dev_volume:/data
+      - ./config.yaml:/config.yaml
+
+volumes:
+  chromadb_dev_volume:

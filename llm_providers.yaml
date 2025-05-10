@@ -1,0 +1,12 @@
+llms:
+  - name: ""
+    provider: ""
+    model: ""
+    api_key: ""
+
+
+# llm_providers: list[str] = ["groq"]
+# groq_model: str = "llama3-70b-8192"
+# openai_model: str = "gpt-3.5-turbo"
+# google_model: str = "gemma3"
+# anthropic_model: str = "claude-2"
