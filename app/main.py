@@ -6,8 +6,8 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 
 from app.api import api_router
-from app.core import config
-from app.services import embedding, llm
+from app.core import config, logging, middleware
+from app.services import llm, vector_store
 
 
 class PdfQaAPI(FastAPI):
@@ -17,7 +17,8 @@ class PdfQaAPI(FastAPI):
 @asynccontextmanager
 async def lifespan(app: PdfQaAPI) -> AsyncGenerator[None, None]:
 	llm.build_llm_provider()
-	embedding.load_model()
+	vector_store.load_embedding_model()
+	vector_store.VectorStore()
 	yield
 
 
@@ -33,13 +34,14 @@ def create_app(settings: config.AppSettings | None = None) -> PdfQaAPI:
 		lifespan=lifespan,
 	)
 	app.settings = settings
-	# TODO add logging
+	logging.init_logging("app.log", settings=settings)
 
 	# Redirect root to docs page
 	@app.get("/", include_in_schema=False)
 	def docs_redirect() -> RedirectResponse:
 		return RedirectResponse(url="/docs")
 
+	middleware.define_middleware(app)
 	app.include_router(api_router)
 	return app
 

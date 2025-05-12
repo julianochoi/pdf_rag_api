@@ -7,6 +7,7 @@ from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, Settings
 class AppSettings(BaseSettings):
 	environment: str = "dev"
 	port: int = 5000
+	log_level: str = "DEBUG"
 
 	# embedding model
 	embedding_model: str = "all-MiniLM-L6-v2"

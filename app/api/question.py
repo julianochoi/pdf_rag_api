@@ -18,6 +18,7 @@ class QuestionResponse(BaseModel):
 	chunks: list[str]
 
 
+# NOTE Should I make this a streaming endpoint for lower latency?
 @router.post("/question")
 def ask_question(payload: QuestionRequest) -> QuestionResponse:
 	vector_store = VectorStore()

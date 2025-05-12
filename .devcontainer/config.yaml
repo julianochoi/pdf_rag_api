@@ -4,4 +4,4 @@ listen_address: "0.0.0.0"
 
 # General
 persist_path: "/data"
-allow_reset: false
+allow_reset: true

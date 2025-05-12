@@ -1,12 +1,29 @@
-import pdfplumber
-from fastapi import UploadFile
+import os
+import pathlib
+from typing import Iterator
+from uuid import uuid4
 
-from app.services.embedding import create_embedding
+from docling.chunking import HybridChunker
+from docling.document_converter import DocumentConverter
+from docling_core.types.doc.document import DoclingDocument
+from fastapi import UploadFile
+from langchain_core.documents import Document
+
+from app.core.config import get_app_settings
 from app.services.vector_store import VectorStore
 
 
-class FileProcessor:
+class FileLoader:
 	def __init__(self) -> None:
+		settings = get_app_settings()
+		# NOTE hardcoded formats for now
+		allowed_formats = ["pdf", "docx"]
+		self.tmp_dir = "/tmp/pdf_processing"
+		self.converter = DocumentConverter(allowed_formats=allowed_formats)
+		self.chunker = HybridChunker(
+			tokenizer=f"sentence-transformers/{settings.embedding_model}",
+			merge_peers=True,  # optional, defaults to True
+		)
 		self.processed_files: list[str] = []
 		self.failed_files: list[str] = []
 		self.chunks_created = 0
@@ -16,20 +33,55 @@ class FileProcessor:
 		# TODO add validations
 		return True
 
-	@staticmethod
-	def process_pdf(file: UploadFile) -> list[str]:
-		# TODO improve chunking strategy
-		# TODO add support for scanned PDFs with OCR
-		chunks = []
-		with pdfplumber.open(file.file) as pdf:  # type: ignore[arg-type]
-			for page in pdf.pages:
-				text = page.extract_text()
-				if text:
-					chunks.append(text)
-		embeddings = [create_embedding(chunk) for chunk in chunks]
+	def yield_chunked_documents(
+		self,
+		filename: str | None,
+		dl_doc: DoclingDocument,
+	) -> Iterator[Document]:
+		chunk_iter = self.chunker.chunk(dl_doc)
+		for chunk in chunk_iter:
+			yield Document(
+				page_content=self.chunker.contextualize(chunk=chunk),
+				metadata={
+					"source": filename,
+					"dl_meta": chunk.meta.export_json_dict(),
+				},
+			)
+
+	def process_pdf(self, file_path: str, filename: str) -> int:
+		"""Process a PDF file and store its embeddings.
+
+		Returns the number of chunks created.
+		"""
 		vector_store = VectorStore()
-		vector_store.store_embeddings(chunks, embeddings)
-		return chunks
+		chunks_created = 0
+		conv_res = self.converter.convert(source=file_path)
+		doc_iter = self.yield_chunked_documents(
+			filename=filename,
+			dl_doc=conv_res.document,
+		)
+		for doc in doc_iter:
+			vector_store.collection.add(
+				ids=[str(uuid4())],
+				# TODO add support to normalize the document metadata
+				metadatas=[{"source": filename}],
+				documents=[doc.page_content],
+			)
+			chunks_created += 1
+		return chunks_created
+
+	def save_temp_file(self, file: UploadFile) -> str:
+		random_id = str(uuid4())
+		# create a temporary directory if it doesn't exist
+		pathlib.Path(self.tmp_dir).mkdir(parents=True, exist_ok=True)
+		temp_file_path = f"{self.tmp_dir}/{random_id}-{file.filename}"
+		with open(temp_file_path, "wb") as f:
+			f.write(file.file.read())
+		return temp_file_path
+
+	def delete_temp_file(self, file_path: str) -> None:
+		if os.path.exists(file_path):
+			os.remove(file_path)
 
 	def process_files(self, files: list[UploadFile]) -> None:
 		if not files:
@@ -38,7 +90,9 @@ class FileProcessor:
 			if not self.validate_file(file):
 				self.failed_files.append(file.filename) if file.filename else None
 				continue
-			# TODO add error handling for file processing
-			result = self.process_pdf(file)
-			self.chunks_created += len(result)
-			self.processed_files.append(file.filename) if file.filename else None
+			try:
+				file_path = self.save_temp_file(file)
+				self.chunks_created += self.process_pdf(file_path, file.filename)
+				self.processed_files.append(file.filename) if file.filename else None
+			finally:
+				self.delete_temp_file(file_path)

@@ -1,29 +1,52 @@
-from app.core.config import AppSettings, get_app_settings
-from app.db import vector_db
-from app.services import embedding
+from functools import lru_cache
+
+from chromadb import Collection, Documents, Embeddings, HttpClient
+from chromadb.utils import embedding_functions
+
+from app.core.config import get_app_settings
+
+
+class CustomEmbeddingFunction(embedding_functions.EmbeddingFunction):
+	"""Custom embedding function for ChromaDB."""
+
+	def __init__(self) -> None:
+		settings = get_app_settings()
+		self.model = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=settings.embedding_model)
+
+	def __call__(self, input: Documents) -> Embeddings:
+		return self.model(input)
+
+	# NOTE this is a workaround for a bug in ChromaDB
+	def name(self) -> str:
+		return "default"
+
+
+@lru_cache(maxsize=1)
+def load_embedding_model() -> embedding_functions.SentenceTransformerEmbeddingFunction:
+	model = CustomEmbeddingFunction()
+	return model
 
 
 class VectorStore:
 	"""Vector store for storing and retrieving embeddings."""
 
-	def __init__(self, settings: AppSettings | None = None) -> None:
-		if settings is None:
-			settings = get_app_settings()
-		self.client = vector_db.create_client(settings)
-		self.collection = self.client.get_collection(name=settings.chroma_collection)
+	def __init__(self) -> None:
+		self.settings = get_app_settings()
+		self.client = HttpClient(
+			host=self.settings.chroma_host,
+			port=self.settings.chroma_port,
+		)
+		self.collection = self._create_collection()
 
-	def store_embeddings(self, chunks: list[str], embeddings: list[embedding.Embedding]) -> None:
-		self.collection.add(
-			documents=chunks,
-			embeddings=embeddings,  # type: ignore
-			metadatas=[{"source": chunk} for chunk in chunks],
-			ids=[f"chunk_{i}" for i in range(len(chunks))],
+	def _create_collection(self) -> Collection:
+		return self.client.get_or_create_collection(
+			name=self.settings.chroma_collection,
+			embedding_function=load_embedding_model(),
 		)
 
 	def retrieve_relevant_chunks(self, question: str) -> list[str]:
-		question_embedding = embedding.create_embedding(question)
 		query = self.collection.query(
-			query_embeddings=[question_embedding],  # type: ignore
+			query_texts=[question],  # type: ignore
 			n_results=5,
 		)
 		docs = query["documents"]
@@ -31,3 +54,7 @@ class VectorStore:
 			return []
 		print("docs:", docs)
 		return docs[0]
+
+	def reset_collection(self) -> None:
+		self.client.reset()
+		self.colection = self._create_collection()
