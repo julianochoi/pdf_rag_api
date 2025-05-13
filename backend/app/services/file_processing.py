@@ -22,16 +22,10 @@ class FileLoader:
 		self.converter = DocumentConverter(allowed_formats=allowed_formats)
 		self.chunker = HybridChunker(
 			tokenizer=f"sentence-transformers/{settings.embedding_model}",
-			merge_peers=True,  # optional, defaults to True
+			merge_peers=True,
 		)
-		self.processed_files: list[str] = []
-		self.failed_files: list[str] = []
+		self.processed_files_count = 0
 		self.chunks_created = 0
-
-	@staticmethod
-	def validate_file(file: UploadFile) -> bool:
-		# TODO add validations
-		return True
 
 	def yield_chunked_documents(
 		self,
@@ -87,12 +81,9 @@ class FileLoader:
 		if not files:
 			raise ValueError("No files provided.")
 		for file in files:
-			if not self.validate_file(file):
-				self.failed_files.append(file.filename) if file.filename else None
-				continue
 			try:
 				file_path = self.save_temp_file(file)
 				self.chunks_created += self.process_pdf(file_path, file.filename)
-				self.processed_files.append(file.filename) if file.filename else None
+				self.processed_files_count += 1
 			finally:
 				self.delete_temp_file(file_path)

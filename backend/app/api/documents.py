@@ -2,8 +2,7 @@ from fastapi import APIRouter, HTTPException, UploadFile
 from loguru import logger
 from pydantic import BaseModel
 
-from app.services import vector_store
-from app.services.file_processor import FileLoader
+from app.services import file_processing, vector_store
 
 router = APIRouter(tags=["documents"])
 
@@ -20,23 +19,16 @@ def upload_documents(files: list[UploadFile]) -> UploadedFileResponse:
 	Upload documents to be processed and indexed.
 	- **files**: List of files to be processed.
 	"""
-	if not files:
-		raise HTTPException(status_code=400, detail="No files provided.")
 	try:
-		processor = FileLoader()
+		processor = file_processing.FileLoader()
 		processor.process_files(files)
 	except Exception:
 		logger.exception("Error processing files")
 		raise HTTPException(status_code=500, detail="Error processing files.")
 
-	message = "Documents processed successfully"
-	# NOTE should we fail for all files if one fails?
-	if processor.failed_files:
-		message = f"Documents processed with errors. Failed files: {', '.join(processor.failed_files)}"
-
 	return UploadedFileResponse(
-		message=message,
-		documents_indexed=len(processor.processed_files),
+		message="Documents processed successfully",
+		documents_indexed=processor.processed_files_count,
 		total_chunks=processor.chunks_created,
 	)
 
