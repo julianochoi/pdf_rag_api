@@ -10,31 +10,24 @@ from app.core import config, logging, middleware
 from app.services import llm, vector_store
 
 
-class PdfQaAPI(FastAPI):
-	settings: config.AppSettings
-
-
 @asynccontextmanager
-async def lifespan(app: PdfQaAPI) -> AsyncGenerator[None, None]:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 	llm.build_llm_provider()
 	vector_store.load_embedding_model()
 	vector_store.VectorStore()
 	yield
 
 
-def create_app(settings: config.AppSettings | None = None) -> PdfQaAPI:
-	if settings is None:
-		settings = config.get_app_settings()
-
-	app = PdfQaAPI(
+def create_app() -> FastAPI:
+	app = FastAPI(
 		title="PDF QA API",
 		description="API to handle PDF uploads and questions regarding the uploaded documents with LLM.",
 		contact={"name": "Juliano Choi", "email": "julianochoi@gmail.com"},
 		redoc_url=None,
 		lifespan=lifespan,
 	)
-	app.settings = settings
-	logging.init_logging("app.log", settings=settings)
+	settings = config.get_app_settings()
+	logging.init_logging("app.log", settings)
 
 	# Redirect root to docs page
 	@app.get("/", include_in_schema=False)
