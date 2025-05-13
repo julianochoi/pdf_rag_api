@@ -16,6 +16,7 @@ dependencies = [
     "langchain[anthropic,google-genai,groq,openai] (>=0.3.25,<0.4.0)",
     "docling (>=2.31.0,<3.0.0)",
     "loguru (>=0.7.3,<0.8.0)",
+    "asgi-correlation-id (>=4.3.4,<5.0.0)",
 ]
 
 [tool.poetry]

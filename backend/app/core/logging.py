@@ -27,12 +27,26 @@ class InterceptHandler(logging.Handler):
 		logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
 
 
+def correlation_id_filter(record: dict) -> str:
+	from asgi_correlation_id.context import correlation_id
+
+	if "correlation_id" not in record["extra"]:
+		record["extra"]["correlation_id"] = correlation_id.get()
+	return record["extra"]["correlation_id"] or "N/A"
+
+
 def format_record(record: dict) -> str:
-	format_string = LOGURU_FORMAT
+	format_string = (
+		"<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
+		"<level>{level: <8}</level> | "
+		"<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan>"
+	)
+	if record["extra"].get("correlation_id") is not None:
+		format_string += " [{extra[correlation_id]}]"
+	format_string += " - <level>{message}</level>"
 	if record["extra"].get("payload") is not None:
 		record["extra"]["payload"] = pformat(record["extra"]["payload"], indent=4, compact=True, width=88)
 		format_string += "\n<level>{extra[payload]}</level>"
-
 	format_string += "{exception}\n"
 	return format_string
 
@@ -58,11 +72,17 @@ def init_logging(
 
 	# configure loguru
 	handlers = [
-		{"sink": sys.stdout, "level": log_level, "format": format_record},
+		{
+			"sink": sys.stdout,
+			"level": log_level,
+			"format": format_record,
+			"filter": correlation_id_filter,
+		},
 		{
 			"sink": f"./logs/{filename}",
 			"level": log_level,
 			"format": format_record,
+			"filter": correlation_id_filter,
 			"rotation": rotation,
 			"mode": "a",  # append
 		},

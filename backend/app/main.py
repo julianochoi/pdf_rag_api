@@ -34,7 +34,7 @@ def create_app() -> FastAPI:
 	def docs_redirect() -> RedirectResponse:
 		return RedirectResponse(url="/docs")
 
-	middleware.define_middleware(app)
+	middleware.define_middlewares(app)
 	app.include_router(api_router)
 	return app
 

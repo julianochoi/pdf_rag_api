@@ -9,6 +9,9 @@ class AppSettings(BaseSettings):
 	port: int = 5000
 	log_level: str = "DEBUG"
 
+	# tracing
+	correlation_id_header: str = "X-Request-ID"
+
 	# embedding model
 	embedding_model: str = "all-MiniLM-L6-v2"
 
