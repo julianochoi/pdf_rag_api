@@ -21,7 +21,7 @@ services:
       - ANONYMIZED_TELEMETRY=False
     volumes:
       - chromadb_dev_volume:/data
-      - ./config.yaml:/config.yaml
+      - ../config.yaml:/config.yaml
 
 volumes:
   chromadb_dev_volume:
