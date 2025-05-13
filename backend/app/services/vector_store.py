@@ -2,6 +2,7 @@ from functools import lru_cache
 
 from chromadb import Collection, Documents, Embeddings, HttpClient, Settings
 from chromadb.utils import embedding_functions
+from loguru import logger
 
 from app.core.config import get_app_settings
 
@@ -53,7 +54,7 @@ class VectorStore:
 		docs = query["documents"]
 		if not docs:
 			return []
-		print("docs:", docs)
+		logger.debug(docs)
 		return docs[0]
 
 	def reset_collection(self) -> None:

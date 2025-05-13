@@ -8,6 +8,7 @@ from docling.document_converter import DocumentConverter
 from docling_core.types.doc.document import DoclingDocument
 from fastapi import UploadFile
 from langchain_core.documents import Document
+from loguru import logger
 
 from app.core.config import get_app_settings
 from app.services.vector_store import VectorStore
@@ -47,9 +48,11 @@ class FileLoader:
 
 		Returns the number of chunks created.
 		"""
+		logger.info(f"Processing file: {file_path}")
 		vector_store = VectorStore()
 		chunks_created = 0
 		conv_res = self.converter.convert(source=file_path)
+		logger.info(f"Chunking file: {file_path}")
 		doc_iter = self.yield_chunked_documents(
 			filename=filename,
 			dl_doc=conv_res.document,
@@ -62,6 +65,7 @@ class FileLoader:
 				documents=[doc.page_content],
 			)
 			chunks_created += 1
+		logger.info(f"Processed {chunks_created} chunks from {filename}")
 		return chunks_created
 
 	def save_temp_file(self, file: UploadFile) -> str:
@@ -78,6 +82,7 @@ class FileLoader:
 			os.remove(file_path)
 
 	def process_files(self, files: list[UploadFile]) -> None:
+		logger.info("Processing files")
 		if not files:
 			raise ValueError("No files provided.")
 		for file in files:

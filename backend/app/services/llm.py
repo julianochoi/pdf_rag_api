@@ -8,6 +8,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
+from loguru import logger
 
 from app.core import config
 
@@ -27,7 +28,7 @@ def build_llm_client() -> BaseChatModel:
 	available = []
 	for llm in settings.llms:
 		if llm.provider not in available_chats:
-			print(f"LLM provider {llm.provider} not supported.")
+			logger.warning(f"LLM provider {llm.provider} not supported.")
 			continue
 		try:
 			chat_class = available_chats[llm.provider]
@@ -40,7 +41,7 @@ def build_llm_client() -> BaseChatModel:
 			)
 			available.append(chat)
 		except Exception as e:
-			print(f"Failed to create LLM client for {llm.provider}: {e}")
+			logger.error(f"Failed to create LLM client for {llm.provider}: {e}")
 			continue
 	if not available:
 		raise ValueError("No available LLM providers found.")
@@ -48,8 +49,8 @@ def build_llm_client() -> BaseChatModel:
 	if len(available):
 		# Fallback to the next available providers
 		base_chat.with_fallbacks(available)
-	print("Using LLM provider:", base_chat.__class__.__name__)
-	print("Fallback providers:", [chat.__class__.__name__ for chat in available])
+	logger.info("Using LLM provider:", base_chat.__class__.__name__)
+	logger.info("Fallback providers:", [chat.__class__.__name__ for chat in available])
 	return base_chat
 
 
