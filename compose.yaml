@@ -1,0 +1,42 @@
+services:
+  backend:
+    container_name: "pdf_qa_backend"
+    build:
+      context: backend/
+      dockerfile: Dockerfile
+    image: pdf_qa:latest
+    ports:
+      - "5000:5000"
+    env_file:
+      - backend/.env
+    restart: unless-stopped
+    depends_on:
+      - chromadb
+
+  chromadb:
+    container_name: "chromadb"
+    image: chromadb/chroma:1.0.8
+    ports:
+      - 8001:8000
+    environment:
+      - ANONYMIZED_TELEMETRY=False
+    volumes:
+      - chromadb:/data
+      - ./config.yaml:/config.yaml
+    restart: unless-stopped
+    
+  frontend:
+    container_name: "pdf_qa_frontend"
+    build:
+      context: frontend/
+      dockerfile: Dockerfile
+    image: pdf_qa_frontend:latest
+    ports:
+      - "8501:8501"
+    env_file:
+      - frontend/.env
+    restart: unless-stopped
+    
+
+volumes:
+  chromadb:

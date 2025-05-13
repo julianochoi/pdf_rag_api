@@ -1,12 +1,14 @@
 import time
 
+import dotenv
 import requests
 import streamlit as st
 from streamlit.delta_generator import DeltaGenerator
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
-# TODO Change this to env vars
-BACKEND_URL = "http://localhost:5000"
+dotenv.load_dotenv()
+
+BACKEND_URL = dotenv.dotenv_values().get("BACKEND_URL", "http://localhost:8000")
 
 st.title("🔍 Ask your PDFs")
 
@@ -51,7 +53,6 @@ def handle_delete_data_button():
 		st.sidebar.error("Failed to delete data.")
 
 
-
 def build_sidebar():
 	# description
 	st.sidebar.header("🤖 Ask your PDFs")
@@ -78,7 +79,7 @@ def build_sidebar():
 	)
 	# add a button to upload the files
 	upload_space = st.sidebar.empty()
-	st.sidebar.button("Upload", on_click=handle_upload_button, args=(uploaded_files,upload_space))
+	st.sidebar.button("Upload", on_click=handle_upload_button, args=(uploaded_files, upload_space))
 
 
 build_sidebar()
@@ -102,7 +103,6 @@ if st.button("Submit Question"):
 				st.write("**Relevant texts:**")
 				# make the following list collapsible
 				with st.expander("Show relevant texts", expanded=False, icon="📄"):
-				# with st.expander("Show relevant texts", expanded=False, icon="📖"):
 					# show the chunks in a list
 					st.write("Relevant texts:")
 					# show each chunk in a list

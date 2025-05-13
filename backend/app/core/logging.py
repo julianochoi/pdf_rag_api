@@ -5,7 +5,6 @@ from datetime import time, timedelta
 from pprint import pformat
 
 from loguru import logger
-from loguru._defaults import LOGURU_FORMAT
 
 from app.core import config
 

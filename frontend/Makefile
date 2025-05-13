@@ -1,5 +1,5 @@
 POETRY = ${POETRY_HOME}/bin/poetry
-sources = app
+sources = app.py
 
 .PHONY: run
 run:
