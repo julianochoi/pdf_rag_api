@@ -1,0 +1,33 @@
+[project]
+name = "frontend"
+version = "0.1.0"
+description = "Streamlit frontend for the PDF QA API."
+authors = [
+    {name = "Juliano Choi",email = "julianochoi@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "streamlit (>=1.45.0,<2.0.0)"
+]
+
+[tool.poetry]
+package-mode = false
+
+[tool.ruff]
+indent-width = 4
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+  "E",
+  "F",
+  "I",
+]
+
+[tool.ruff.format]
+indent-style = "tab"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

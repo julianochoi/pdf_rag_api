@@ -8,7 +8,8 @@
 	"postStartCommand": "./.devcontainer/postStartCommand.sh",
 	"workspaceFolder": "/workspaces/pdf_qa_app",
 	"forwardPorts": [
-		5000 // FastAPI
+		5000, // FastAPI
+		8501 // Streamlit
 	],
 	"customizations": {
 		"vscode": {
@@ -18,10 +19,7 @@
 				"redhat.vscode-yaml",
 				"ms-azuretools.vscode-docker",
 				"charliermarsh.ruff"
-			],
-			"settings": {
-				"python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python"
-			}
+			]
 		}
 	}
 }
