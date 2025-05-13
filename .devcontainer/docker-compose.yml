@@ -17,6 +17,8 @@ services:
     image: chromadb/chroma:1.0.8
     ports:
       - 8000:8000
+    environment:
+      - ANONYMIZED_TELEMETRY=False
     volumes:
       - chromadb_dev_volume:/data
       - ./config.yaml:/config.yaml

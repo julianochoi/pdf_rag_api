@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from chromadb import Collection, Documents, Embeddings, HttpClient
+from chromadb import Collection, Documents, Embeddings, HttpClient, Settings
 from chromadb.utils import embedding_functions
 
 from app.core.config import get_app_settings
@@ -35,6 +35,7 @@ class VectorStore:
 		self.client = HttpClient(
 			host=self.settings.chroma_host,
 			port=self.settings.chroma_port,
+			settings=Settings(anonymized_telemetry=False),
 		)
 		self.collection = self._create_collection()
 
