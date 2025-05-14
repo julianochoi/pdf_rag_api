@@ -8,7 +8,7 @@ from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 dotenv.load_dotenv()
 
-BACKEND_URL = dotenv.dotenv_values().get("BACKEND_URL", "http://localhost:8000")
+BACKEND_URL = dotenv.dotenv_values().get("BACKEND_URL", "http://backend:5000")
 
 st.title("🔍 Ask your PDFs")
 
