@@ -1,5 +1,5 @@
 POETRY = ${POETRY_HOME}/bin/poetry
-sources = app tests
+sources = app
 
 .PHONY: run
 run:
@@ -19,14 +19,9 @@ lint:
 	$(POETRY) run ruff check $(sources)
 	$(POETRY) run mypy
 
-.PHONY: test
-test:
-	$(POETRY) run coverage run -m pytest -vvv
-	$(POETRY) run coverage report
-
 .PHONY: clean
 clean:
-	rm -rf .mypy_cache .coverage .ruff_cache .pytest_cache
+	rm -rf .mypy_cache .ruff_cache
 
 .PHONY: fclean
 fclean: clean

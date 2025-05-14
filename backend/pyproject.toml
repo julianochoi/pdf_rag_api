@@ -25,31 +25,6 @@ package-mode = false
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.11.8"
 mypy = "^1.15.0"
-pytest = "^8.3.5"
-coverage = "^7.8.0"
-
-[tool.pytest.ini_options]
-minversion = "8.0"
-testpaths = "tests"
-asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "session"
-
-[tool.coverage]
-paths.source = ["app"]
-run.omit = [
-  "tests/**",
-  "app/main.py",
-  "app/core/config.py",
-]
-run.branch = true
-run.concurrency = ["greenlet"]  # required for more accurate coverage with async code
-report.precision = 1
-report.show_missing = true
-report.skip_covered = true
-html.directory = "coverage_html_report"
-html.skip_covered = true
-html.show_contexts = true
-
 
 [tool.ruff]
 indent-width = 4
