@@ -45,12 +45,14 @@ def handle_upload_button(uploaded_files: list[UploadedFile] | None, upload_space
 		upload_warning.empty()
 
 
-def handle_delete_data_button():
+def handle_delete_data_button(delete_data_space: DeltaGenerator):
 	r = requests.delete(f"{BACKEND_URL}/documents")
 	if r.ok:
-		st.sidebar.success("All data deleted successfully!")
+		delete_data_space.success("All data deleted successfully!")
 	else:
-		st.sidebar.error("Failed to delete data.")
+		delete_data_space.error("Failed to delete data.")
+	time.sleep(3)
+	delete_data_space.empty()
 
 
 def build_sidebar():
@@ -67,7 +69,8 @@ def build_sidebar():
 	# add a button to delete all data from the backend
 	if st.sidebar.button("Delete all data", help="Delete all documents and chunks in the database."):
 		st.sidebar.warning("Are you sure you want to delete all data? This action cannot be undone.")
-		st.sidebar.button("Confirm", on_click=handle_delete_data_button)
+		delete_data_space = st.sidebar.empty()
+		st.sidebar.button("Confirm", on_click=handle_delete_data_button, args=(delete_data_space,))
 	# PDF Upload in Sidebar
 	st.sidebar.header("📄 Upload")
 

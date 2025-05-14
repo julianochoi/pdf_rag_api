@@ -85,16 +85,16 @@ Below is a table of the available environment variables and their default values
 <details>
 <summary>Environment variables</summary>
 
-|Variable				|Description							|Default Value		|
-|:---					|:---									|:---:				|
-|ENVIRONMENT			|Deploy environment (dev, prod, etc.)	|"dev"				|
-|PORT					|-										|5000				|
-|LOG_LEVEL				|-										|"DEBUG"			|
-|CORRELATION_ID_HEADER	|Correlation header used for tracing.	|"X-Request-ID"		|
-|EMBEDDING_MODEL		|Model used to compute embeddings.		|"all-MiniLM-L6-v2"	|
-|CHROMA_HOST			|URI to Chroma DB host.					|"chromadb"			|
-|CHROMA_PORT			|-										|8000				|
-|CHROMA_COLLECTION		|-										|"pdf_chunks"		|
+|Variable	|Description	|Default Value	|
+|:---	|:---	|:---:	|
+|ENVIRONMENT	|Deploy environment (dev, prod, etc.)	|"dev"	|
+|PORT|-	|5000	|
+|LOG_LEVEL	|-	|"DEBUG"	|
+|CORRELATION_ID_HEADER	|Correlation header used for tracing.	|"X-Request-ID"	|
+|EMBEDDING_MODEL	|Model used to compute embeddings.	|"all-MiniLM-L6-v2"	|
+|CHROMA_HOST	|URI to Chroma DB host.	|"chromadb"	|
+|CHROMA_PORT	|-	|8000	|
+|CHROMA_COLLECTION|-	|"pdf_chunks"	|
 </details>
 
 ### Frontend
@@ -106,7 +106,23 @@ Below is a table of the available environment variables and their default values
 <details>
 <summary>Environment variables</summary>
 
-|Variable	|Description|Default Value			|
-|:---		|:---		|:---:					|
-|BACKEND_URL|-			|"http://backend:5000"	|
+|Variable	|Description|Default Value	|
+|:---	|:---	|:---:	|
+|BACKEND_URL|-	|"http://backend:5000"	|
 
+</details>
+
+## Examples
+Using the paper [Large-scale cluster management at Google with Borg](https://research.google/pubs/large-scale-cluster-management-at-google-with-borg/):
+
+Download the paper from [here](https://dl.acm.org/doi/pdf/10.1145/2741948.2741964).
+
+###  Uploading a PDF file
+![File Upload](docs/assets/file_upload.gif)
+
+###  Asking a question
+**Question**: "How does borg handle scheduling?"
+
+**Answer**: Borg handles scheduling through a two-part process: feasibility checking and scoring. Feasibility checking finds a set of machines that meet the task's constraints and have enough available resources. Scoring determines the "goodness" of each feasible machine, taking into account built-in criteria such as minimizing preempted tasks and spreading tasks across power and failure domains. Thanks for asking!
+
+![Ask Question](docs/assets/ask_question.gif)
