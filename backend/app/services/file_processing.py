@@ -3,8 +3,9 @@ import pathlib
 from typing import Iterator
 from uuid import uuid4
 
-from docling.chunking import HybridChunker
+from docling.datamodel.base_models import InputFormat
 from docling.document_converter import DocumentConverter
+from docling_core.transforms.chunker.hybrid_chunker import HybridChunker
 from docling_core.types.doc.document import DoclingDocument
 from fastapi import UploadFile
 from langchain_core.documents import Document
@@ -18,11 +19,11 @@ class FileLoader:
 	def __init__(self) -> None:
 		settings = get_app_settings()
 		# NOTE hardcoded formats for now
-		allowed_formats = ["pdf", "docx"]
+		allowed_formats = [InputFormat.PDF, InputFormat.DOCX]
 		self.tmp_dir = "/tmp/pdf_processing"
 		self.converter = DocumentConverter(allowed_formats=allowed_formats)
 		self.chunker = HybridChunker(
-			tokenizer=f"sentence-transformers/{settings.embedding_model}",
+			tokenizer=f"sentence-transformers/{settings.embedding_model}",  # type: ignore[arg-type]
 			merge_peers=True,
 		)
 		self.processed_files_count = 0
@@ -88,7 +89,10 @@ class FileLoader:
 		for file in files:
 			try:
 				file_path = self.save_temp_file(file)
-				self.chunks_created += self.process_pdf(file_path, file.filename)
+				filename = file.filename
+				if not filename:
+					raise ValueError("File name is empty.")
+				self.chunks_created += self.process_pdf(file_path, filename)
 				self.processed_files_count += 1
 			finally:
 				self.delete_temp_file(file_path)

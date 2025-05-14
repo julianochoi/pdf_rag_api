@@ -13,6 +13,8 @@ class UploadedFileResponse(BaseModel):
 	total_chunks: int
 
 
+# NOTE This is a CPU-intensive operation, so it could be run on the background with workers and a queue.
+# NOTE This would break the user feedback loop, though, so we could use a websocket or sse to notify the user when done.
 @router.post("/documents", status_code=200)
 def upload_documents(files: list[UploadFile]) -> UploadedFileResponse:
 	"""
@@ -35,5 +37,9 @@ def upload_documents(files: list[UploadFile]) -> UploadedFileResponse:
 
 @router.delete("/documents", status_code=201)
 def delete_documents() -> dict[str, str]:
-	vector_store.VectorStore().reset_collection()
-	return {"message": "All documents deleted from the index."}
+	try:
+		vector_store.VectorStore().reset_collection()
+		return {"message": "All documents deleted from the index."}
+	except Exception:
+		logger.exception("Error deleting documents")
+		raise HTTPException(status_code=500, detail="Error deleting documents.")

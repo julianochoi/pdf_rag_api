@@ -21,7 +21,7 @@ def define_middlewares(app: FastAPI) -> None:
 
 	# Add middleware to log request processing time
 	@app.middleware("http")
-	async def add_process_time_header(request: Request, call_next):
+	async def add_process_time_header(request: Request, call_next):  # type: ignore
 		start_time = time.perf_counter()
 		response = await call_next(request)
 		process_time = time.perf_counter() - start_time

@@ -25,7 +25,9 @@ ENV PATH="${PATH}:${POETRY_VENV}/bin"
 
 COPY poetry.lock pyproject.toml ./
 
-RUN poetry install --only main
+RUN poetry install --only main --no-interaction --no-cache \
+    # remove poetry cache
+    && rm -rf /root/.cache/pypoetry
 
 COPY . .
 
